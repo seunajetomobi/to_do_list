@@ -1,5 +1,55 @@
 # React + TypeScript + Vite
 
+## Local setup
+
+If you hit native binding or optional dependency errors during build/dev, run a clean reinstall:
+
+npm uninstall vite @vitejs/plugin-react
+npm install
+npm install -D vite@^5.4.19 @vitejs/plugin-react@^4.4.1
+
+Then start the app:
+
+npm run dev
+
+## Deploy to GitHub Pages and AWS
+
+This repo is configured to deploy on push to main.
+
+### 1) GitHub Pages
+
+In your repository settings:
+
+- Go to Settings > Pages
+- Set Source to GitHub Actions
+
+The workflow builds with:
+
+- npm run build:pages
+
+### 2) AWS (S3 + optional CloudFront)
+
+Create an S3 bucket for static hosting and (recommended) front it with CloudFront.
+
+Add these GitHub repository secrets:
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_REGION
+- AWS_S3_BUCKET
+- AWS_CLOUDFRONT_DISTRIBUTION_ID (optional)
+
+The workflow deploys with:
+
+- npm run build:aws
+- aws s3 sync dist s3://$AWS_S3_BUCKET --delete
+
+### 3) Push to trigger deploy
+
+git add .
+git commit -m "feat: bulk actions, responsive UI, and deployment setup"
+git push origin main
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
