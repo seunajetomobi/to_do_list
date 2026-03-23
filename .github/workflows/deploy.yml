@@ -9,16 +9,17 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build_pages:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,7 +31,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build for GitHub Pages
         run: npm run build:pages
@@ -43,6 +44,11 @@ jobs:
   deploy_pages:
     needs: build_pages
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -51,9 +57,38 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Health check GitHub Pages
+        run: |
+          set -euo pipefail
+          url="${{ steps.deployment.outputs.page_url }}"
+          echo "Checking $url"
+          for i in 1 2 3 4 5 6; do
+            if curl -fsSL "$url" >/dev/null; then
+              echo "GitHub Pages is healthy."
+              exit 0
+            fi
+            echo "Attempt $i failed; retrying in 10s..."
+            sleep 10
+          done
+          echo "GitHub Pages health check failed."
+          exit 1
+
   deploy_aws:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: production
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION || vars.AWS_REGION || 'us-east-1' }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || vars.AWS_S3_BUCKET }}
+      AWS_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID || vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+      AWS_HEALTHCHECK_URL: ${{ secrets.AWS_HEALTHCHECK_URL || vars.AWS_HEALTHCHECK_URL }}
+      GH_OWNER: ${{ github.repository_owner }}
+      GH_REPO: ${{ github.event.repository.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,26 +100,87 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build for AWS
         run: npm run build:aws
 
-      - name: Configure AWS credentials
+      - name: Validate AWS auth configuration
+        run: |
+          set -euo pipefail
+          if [[ -n "${{ secrets.AWS_ROLE_TO_ASSUME }}" ]]; then
+            echo "Using OIDC role assumption."
+            exit 0
+          fi
+          if [[ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" && -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]]; then
+            echo "Using access key credentials."
+            exit 0
+          fi
+          echo "Missing AWS credentials. Set AWS_ROLE_TO_ASSUME or both AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY."
+          exit 1
+
+      - name: Configure AWS credentials (OIDC)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (access keys)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Sync to S3 bucket
+      - name: Deploy static site to AWS
+        id: deploy_aws_step
         run: |
-          aws s3 sync dist s3://${{ secrets.AWS_S3_BUCKET }} --delete
-          aws s3 cp dist/index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html --cache-control "no-cache"
+          bash scripts/deploy-aws.sh
 
       - name: Invalidate CloudFront cache (optional)
-        if: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        if: ${{ env.AWS_CLOUDFRONT_DISTRIBUTION_ID != '' }}
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id ${{ env.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
+
+      - name: Health check AWS deployment
+        run: |
+          set -euo pipefail
+          url="${{ steps.deploy_aws_step.outputs.website_url }}"
+          if [[ -n "${AWS_HEALTHCHECK_URL}" ]]; then
+            url="${AWS_HEALTHCHECK_URL}"
+          fi
+          echo "Checking $url"
+          for i in 1 2 3 4 5 6; do
+            if curl -fsSL "$url" >/dev/null; then
+              echo "AWS deployment is healthy."
+              exit 0
+            fi
+            echo "Attempt $i failed; retrying in 10s..."
+            sleep 10
+          done
+          echo "AWS health check failed."
+          exit 1
+
+  notify_failure:
+    if: ${{ failure() && secrets.SLACK_WEBHOOK_URL != '' }}
+    needs:
+      - deploy_pages
+      - deploy_aws
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Slack on failure
+        env:
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          payload=$(cat <<JSON
+          {
+            "text": "Deployment failed for ${{ github.repository }} on ${{ github.ref_name }}. Run: ${RUN_URL}"
+          }
+          JSON
+          )
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK_URL }}"
