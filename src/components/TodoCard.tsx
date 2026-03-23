@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import type { TodoItem } from '../types';
-import RichTextEditor from './RichTextEditor';
+const RichTextEditor = lazy(() => import('./RichTextEditor'));
 
 interface TodoCardProps {
   item: TodoItem;
@@ -137,11 +137,13 @@ export default function TodoCard({
         {showComments && (
           <div style={{ marginTop: 10 }}>
             <div className="comments-label">Comments</div>
-            <RichTextEditor
-              content={item.comment}
-              onChange={(html) => onCommentChange(item.id, html)}
-              placeholder="Add notes, links, or any details…"
-            />
+            <Suspense fallback={<div style={{ color: 'var(--text-muted)' }}>Loading editor…</div>}>
+              <RichTextEditor
+                content={item.comment}
+                onChange={(html) => onCommentChange(item.id, html)}
+                placeholder="Add notes, links, or any details…"
+              />
+            </Suspense>
           </div>
         )}
       </div>
