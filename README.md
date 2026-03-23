@@ -1,3 +1,70 @@
+TaskFlow — Warm & Lovely To‑Do App
+
+A minimal, client-side to‑do list app with a warm visual theme, delightful fonts, and fast UX.
+
+This repository contains the TaskFlow single-page application built with React + TypeScript and Vite.
+
+Key features
+- Local-only storage using `localStorage` (no backend required).
+- Rich-text comments for tasks (TipTap editor, lazy-loaded to reduce initial bundle).
+- Multiple lists, priorities, due dates, bulk actions, and accessibility improvements.
+- Deploy scripts for GitHub Pages and AWS S3, plus a GitHub Actions workflow for CI/CD.
+
+Quick start (development)
+1. Install dependencies:
+
+```bash
+npm ci --legacy-peer-deps
+```
+
+2. Run the dev server:
+
+```bash
+npm run dev
+# Open http://localhost:5173
+```
+
+Build & publish
+- Build for production:
+
+```bash
+npm run build
+```
+
+- Build for GitHub Pages (relative base):
+
+```bash
+npm run build:pages
+```
+
+- Deploy to GitHub Pages (local):
+
+```bash
+npm run deploy:pages
+```
+
+- Deploy to AWS S3 (local):
+
+```bash
+export BUCKET=your-bucket-name
+npm run deploy:aws
+```
+
+Continuous deployment
+- A GitHub Actions workflow is included at `.github/workflows/deploy.yml`. Set these repository secrets to enable automatic S3 deploys:
+
+  - `AWS_S3_BUCKET` — S3 bucket name
+  - `AWS_REGION` — AWS region (e.g., eu-north-1)
+  - `AWS_ACCESS_KEY_ID` — IAM access key ID
+  - `AWS_SECRET_ACCESS_KEY` — IAM secret access key
+
+Notes & recommendations
+- The TipTap editor is lazy-loaded to keep the initial bundle small; a visual skeleton displays while it loads.
+- If you want HTTPS for the S3 site or better caching/CDN, consider adding CloudFront in front of the bucket.
+- Consider additional code-splitting or dependency trimming if you need smaller bundles.
+
+Credits
+- Built and styled for a warm, lovely experience.
 # React + TypeScript + Vite
 
 ## Local setup

@@ -1,6 +1,6 @@
-import { useState, Suspense, lazy } from 'react';
-import type { TodoItem } from '../types';
-const RichTextEditor = lazy(() => import('./RichTextEditor'));
+import { Suspense, lazy, useState } from "react";
+import type { TodoItem } from "../types";
+const RichTextEditor = lazy(() => import("./RichTextEditor"));
 
 interface TodoCardProps {
   item: TodoItem;
@@ -38,25 +38,35 @@ export default function TodoCard({
     setIsEditingTitle(false);
   };
 
-  const priorityLabel = item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
+  const priorityLabel =
+    item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
 
   return (
-    <div className={`todo-card${item.done ? ' done' : ''}`}>
+    <div className={`todo-card${item.done ? " done" : ""}`}>
       <div className="todo-card-header">
         <button
-          className={`check-btn${item.done ? ' checked' : ''}`}
+          className={`check-btn${item.done ? " checked" : ""}`}
           onClick={() => onToggleDone(item.id)}
-          title={item.done ? 'Mark as Not Done' : 'Mark as Done'}
-          aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
+          title={item.done ? "Mark as Not Done" : "Mark as Done"}
+          aria-label={item.done ? "Mark as not done" : "Mark as done"}
         >
           {item.done && (
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M2 6l3 3 5-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           )}
         </button>
 
-        <label className={`delete-select-label${selectedForDelete ? ' selected' : ''}`} title="Select task for bulk actions">
+        <label
+          className={`delete-select-label${selectedForDelete ? " selected" : ""}`}
+          title="Select task for bulk actions"
+        >
           <input
             type="checkbox"
             checked={selectedForDelete}
@@ -73,8 +83,8 @@ export default function TodoCard({
             onChange={(e) => setTitleDraft(e.target.value)}
             onBlur={commitRename}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') commitRename();
-              if (e.key === 'Escape') {
+              if (e.key === "Enter") commitRename();
+              if (e.key === "Escape") {
                 setTitleDraft(item.title);
                 setIsEditingTitle(false);
               }
@@ -85,8 +95,12 @@ export default function TodoCard({
           <span className="todo-title">{item.title}</span>
         )}
 
-        <span className={`priority-badge ${item.priority}`}>{priorityLabel}</span>
-        {item.dueDate && <span className="due-date-badge">Due {item.dueDate}</span>}
+        <span className={`priority-badge ${item.priority}`}>
+          {priorityLabel}
+        </span>
+        {item.dueDate && (
+          <span className="due-date-badge">Due {item.dueDate}</span>
+        )}
 
         {item.done && <span className="done-badge">Done</span>}
 
@@ -100,7 +114,16 @@ export default function TodoCard({
             title="Edit title"
             aria-label="Edit title"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
             </svg>
@@ -111,7 +134,16 @@ export default function TodoCard({
             title="Delete item"
             aria-label="Delete item"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
               <path d="M10 11v6M14 11v6" />
@@ -126,18 +158,36 @@ export default function TodoCard({
           className="toggle-comments-btn"
           onClick={() => setShowComments((v) => !v)}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            {showComments
-              ? <path d="M18 15l-6-6-6 6" />
-              : <path d="M6 9l6 6 6-6" />}
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {showComments ? (
+              <path d="M18 15l-6-6-6 6" />
+            ) : (
+              <path d="M6 9l6 6 6-6" />
+            )}
           </svg>
-          {showComments ? 'Hide comments' : 'Show comments'}
+          {showComments ? "Hide comments" : "Show comments"}
         </button>
 
         {showComments && (
           <div style={{ marginTop: 10 }}>
             <div className="comments-label">Comments</div>
-            <Suspense fallback={<div style={{ color: 'var(--text-muted)' }}>Loading editor…</div>}>
+            <Suspense
+              fallback={
+                <div>
+                  <div className="comments-label">Comments</div>
+                  <div className="skeleton" style={{ marginTop: 8 }} />
+                </div>
+              }
+            >
               <RichTextEditor
                 content={item.comment}
                 onChange={(html) => onCommentChange(item.id, html)}
