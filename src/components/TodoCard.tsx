@@ -56,14 +56,14 @@ export default function TodoCard({
           )}
         </button>
 
-        <label className={`delete-select-label${selectedForDelete ? ' selected' : ''}`} title="Select task for bulk delete">
+        <label className={`delete-select-label${selectedForDelete ? ' selected' : ''}`} title="Select task for bulk actions">
           <input
             type="checkbox"
             checked={selectedForDelete}
             onChange={() => onToggleSelectForDelete(item.id)}
-            aria-label="Select task for bulk delete"
+            aria-label="Select task for bulk actions"
           />
-          Delete
+          Select
         </label>
 
         {isEditingTitle ? (

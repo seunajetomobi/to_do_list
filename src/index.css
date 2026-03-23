@@ -331,6 +331,16 @@ body {
   align-items: center;
 }
 
+.task-tools-hint {
+  margin-right: auto;
+  font-size: 0.76rem;
+  color: #5b5f72;
+  background: #f4f6ff;
+  border: 1px solid #dbe2ff;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
 .task-search-input {
   flex: 1;
   min-width: 200px;
@@ -340,7 +350,6 @@ body {
   display: inline-flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-right: auto;
 }
 
 .task-summary span {
@@ -816,6 +825,10 @@ body {
   .task-tools {
     padding-left: 16px;
     padding-right: 16px;
+  }
+
+  .task-tools-hint {
+    width: 100%;
   }
 }
 

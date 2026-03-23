@@ -12,7 +12,7 @@ Then start the app:
 
 npm run dev
 
-## Deploy to GitHub Pages and AWS
+## Deploy to GitHub Pages
 
 This repo is configured to deploy on push to main.
 
@@ -26,47 +26,6 @@ In your repository settings:
 The workflow builds with:
 
 - npm run build:pages
-
-### 2) AWS (S3 + optional CloudFront)
-
-AWS deployment is automated end-to-end in CI:
-
-- Builds app for root hosting
-- Creates S3 bucket if it does not exist
-- Configures S3 static website hosting and public-read policy
-- Syncs files and cache-busts index.html
-- Optionally invalidates CloudFront
-
-Add these GitHub repository secrets:
-
-- AWS_ROLE_TO_ASSUME (recommended, OIDC)
-
-or
-
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-
-Optional (secret or repo variable):
-
-- AWS_REGION (default: us-east-1)
-- AWS_S3_BUCKET (if omitted, auto-generated as owner-repo-web)
-- AWS_CLOUDFRONT_DISTRIBUTION_ID
-- AWS_HEALTHCHECK_URL (override URL used by CI health checks)
-- SLACK_WEBHOOK_URL (optional failure notification)
-
-The workflow deploys with:
-
-- npm run build:aws
-- bash scripts/deploy-aws.sh
-
-### 4) Hardening recommendations
-
-Set these in GitHub for safer production deploys:
-
-- Environment protection: require approvals for production environment
-- Branch protection on main: require status checks to pass before merge
-- Required checks: deploy_pages and deploy_aws
-- Use OIDC role (AWS_ROLE_TO_ASSUME) instead of long-lived access keys
 
 ### 3) Push to trigger deploy
 

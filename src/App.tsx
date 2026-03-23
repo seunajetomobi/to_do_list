@@ -325,6 +325,7 @@ export default function App() {
               </div>
 
               <div className="task-tools-row actions">
+                <p className="task-tools-hint">Tip: Select tasks using each card checkbox, then use Delete Selected.</p>
                 <div className="task-summary">
                   <span>{activeCount} active</span>
                   <span>{completedCount} completed</span>
@@ -343,10 +344,10 @@ export default function App() {
                   Clear Completed
                 </button>
                 <button type="button" className="tool-btn" onClick={() => selectedId && toggleAll(selectedId, true)} disabled={totalCount === 0}>
-                  Mark All Done
+                  Complete All
                 </button>
                 <button type="button" className="tool-btn" onClick={() => selectedId && toggleAll(selectedId, false)} disabled={totalCount === 0}>
-                  Reset Done
+                  Mark All Active
                 </button>
               </div>
             </div>
@@ -400,8 +401,8 @@ export default function App() {
               <path d="M9 11l3 3L22 4" />
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
             </svg>
-            <h2>Welcome to TaskFlow</h2>
-            <p>Create your first list using the <strong>New List</strong> button in the sidebar.</p>
+            <h2>Welcome to TaskFlow, Seun Ajetomobi</h2>
+            <p>Create your first list using the <strong>New List</strong> button in the sidebar, then add your first task with title, priority, and due date.</p>
           </div>
         )}
       </main>

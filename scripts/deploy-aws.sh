@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DIST_DIR="${DIST_DIR:-dist}"
-AWS_REGION="${AWS_REGION:-us-east-1}"
+AWS_REGION="${AWS_REGION:-eu-north-1}"
 GH_OWNER="${GH_OWNER:-unknown-owner}"
 GH_REPO="${GH_REPO:-unknown-repo}"
 AWS_S3_BUCKET="${AWS_S3_BUCKET:-}"
