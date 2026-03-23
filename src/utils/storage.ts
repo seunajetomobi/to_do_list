@@ -54,22 +54,27 @@ export function uuid(): string {
   // crypto.getRandomValues-based RFC4122 v4 fallback so the app works over HTTP
   // (S3 static website) as well as HTTPS/localhost.
   try {
-    if (
-      typeof crypto !== "undefined" &&
-      typeof (crypto as any).randomUUID === "function"
-    ) {
-      return (crypto as any).randomUUID();
+    if (typeof crypto !== "undefined") {
+      const c = crypto as unknown as
+        | (Crypto & { randomUUID?: () => string })
+        | undefined;
+      if (c?.randomUUID) return c.randomUUID();
     }
-  } catch {}
+  } catch {
+    // ignore and fall back to non-native implementation
+  }
 
   // Fallback implementation (RFC4122 v4)
   const bytes = new Uint8Array(16);
-  if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.getRandomValues === "function"
-  ) {
-    crypto.getRandomValues(bytes);
-  } else {
+  if (typeof crypto !== "undefined") {
+    const c = crypto as unknown as
+      | (Crypto & { getRandomValues?: (arr: Uint8Array) => void })
+      | undefined;
+    if (c?.getRandomValues) {
+      c.getRandomValues(bytes);
+    }
+  }
+  if (!bytes.some((n) => n !== 0)) {
     // Last resort: Math.random (not cryptographically secure)
     for (let i = 0; i < 16; i++) {
       bytes[i] = Math.floor(Math.random() * 256);

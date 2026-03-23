@@ -1,10 +1,14 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import type { TodoList, TodoItem, TodoPriority } from './types';
-import { loadLists, saveLists, uuid } from './utils/storage';
-import Sidebar from './components/Sidebar';
-import TodoCard from './components/TodoCard';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Sidebar from "./components/Sidebar";
+import TodoCard from "./components/TodoCard";
+import type { TodoItem, TodoList, TodoPriority } from "./types";
+import { loadLists, saveLists, uuid } from "./utils/storage";
 
-const PRIORITY_WEIGHT: Record<TodoPriority, number> = { high: 3, medium: 2, low: 1 };
+const PRIORITY_WEIGHT: Record<TodoPriority, number> = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
 
 function useLists() {
   const [lists, setLists] = useState<TodoList[]>(loadLists);
@@ -17,7 +21,7 @@ function useLists() {
   const createList = useCallback(() => {
     const newList: TodoList = {
       id: uuid(),
-      name: 'New List',
+      name: "New List",
       items: [],
       createdAt: Date.now(),
     };
@@ -26,65 +30,149 @@ function useLists() {
     return newList.id;
   }, [lists, update]);
 
-  const deleteList = useCallback((id: string) => {
-    update(lists.filter((l) => l.id !== id));
-  }, [lists, update]);
+  const deleteList = useCallback(
+    (id: string) => {
+      update(lists.filter((l) => l.id !== id));
+    },
+    [lists, update],
+  );
 
-  const renameList = useCallback((id: string, name: string) => {
-    update(lists.map((l) => (l.id === id ? { ...l, name } : l)));
-  }, [lists, update]);
+  const renameList = useCallback(
+    (id: string, name: string) => {
+      update(lists.map((l) => (l.id === id ? { ...l, name } : l)));
+    },
+    [lists, update],
+  );
 
-  const addItem = useCallback((listId: string, title: string, priority: TodoPriority, dueDate: string | null) => {
-    const item: TodoItem = {
-      id: uuid(),
-      title,
-      done: false,
-      comment: '',
-      priority,
-      dueDate,
-      createdAt: Date.now(),
-    };
-    update(lists.map((l) => l.id === listId ? { ...l, items: [...l.items, item] } : l));
-  }, [lists, update]);
+  const addItem = useCallback(
+    (
+      listId: string,
+      title: string,
+      priority: TodoPriority,
+      dueDate: string | null,
+    ) => {
+      const item: TodoItem = {
+        id: uuid(),
+        title,
+        done: false,
+        comment: "",
+        priority,
+        dueDate,
+        createdAt: Date.now(),
+      };
+      update(
+        lists.map((l) =>
+          l.id === listId ? { ...l, items: [...l.items, item] } : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const deleteItem = useCallback((listId: string, itemId: string) => {
-    update(lists.map((l) => l.id === listId ? { ...l, items: l.items.filter((i) => i.id !== itemId) } : l));
-  }, [lists, update]);
+  const deleteItem = useCallback(
+    (listId: string, itemId: string) => {
+      update(
+        lists.map((l) =>
+          l.id === listId
+            ? { ...l, items: l.items.filter((i) => i.id !== itemId) }
+            : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const deleteManyItems = useCallback((listId: string, itemIds: string[]) => {
-    const selected = new Set(itemIds);
-    update(lists.map((l) => l.id === listId ? { ...l, items: l.items.filter((i) => !selected.has(i.id)) } : l));
-  }, [lists, update]);
+  const deleteManyItems = useCallback(
+    (listId: string, itemIds: string[]) => {
+      const selected = new Set(itemIds);
+      update(
+        lists.map((l) =>
+          l.id === listId
+            ? { ...l, items: l.items.filter((i) => !selected.has(i.id)) }
+            : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const toggleItem = useCallback((listId: string, itemId: string) => {
-    update(lists.map((l) => l.id === listId
-      ? { ...l, items: l.items.map((i) => i.id === itemId ? { ...i, done: !i.done } : i) }
-      : l));
-  }, [lists, update]);
+  const toggleItem = useCallback(
+    (listId: string, itemId: string) => {
+      update(
+        lists.map((l) =>
+          l.id === listId
+            ? {
+                ...l,
+                items: l.items.map((i) =>
+                  i.id === itemId ? { ...i, done: !i.done } : i,
+                ),
+              }
+            : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const updateComment = useCallback((listId: string, itemId: string, comment: string) => {
-    update(lists.map((l) => l.id === listId
-      ? { ...l, items: l.items.map((i) => i.id === itemId ? { ...i, comment } : i) }
-      : l));
-  }, [lists, update]);
+  const updateComment = useCallback(
+    (listId: string, itemId: string, comment: string) => {
+      update(
+        lists.map((l) =>
+          l.id === listId
+            ? {
+                ...l,
+                items: l.items.map((i) =>
+                  i.id === itemId ? { ...i, comment } : i,
+                ),
+              }
+            : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const renameItem = useCallback((listId: string, itemId: string, title: string) => {
-    update(lists.map((l) => l.id === listId
-      ? { ...l, items: l.items.map((i) => i.id === itemId ? { ...i, title } : i) }
-      : l));
-  }, [lists, update]);
+  const renameItem = useCallback(
+    (listId: string, itemId: string, title: string) => {
+      update(
+        lists.map((l) =>
+          l.id === listId
+            ? {
+                ...l,
+                items: l.items.map((i) =>
+                  i.id === itemId ? { ...i, title } : i,
+                ),
+              }
+            : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const clearCompleted = useCallback((listId: string) => {
-    update(lists.map((l) => l.id === listId
-      ? { ...l, items: l.items.filter((i) => !i.done) }
-      : l));
-  }, [lists, update]);
+  const clearCompleted = useCallback(
+    (listId: string) => {
+      update(
+        lists.map((l) =>
+          l.id === listId ? { ...l, items: l.items.filter((i) => !i.done) } : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
-  const toggleAll = useCallback((listId: string, done: boolean) => {
-    update(lists.map((l) => l.id === listId
-      ? { ...l, items: l.items.map((i) => ({ ...i, done })) }
-      : l));
-  }, [lists, update]);
+  const toggleAll = useCallback(
+    (listId: string, done: boolean) => {
+      update(
+        lists.map((l) =>
+          l.id === listId
+            ? { ...l, items: l.items.map((i) => ({ ...i, done })) }
+            : l,
+        ),
+      );
+    },
+    [lists, update],
+  );
 
   return {
     lists,
@@ -117,26 +205,40 @@ export default function App() {
     clearCompleted,
     toggleAll,
   } = useLists();
-  const [selectedId, setSelectedId] = useState<string | null>(lists[0]?.id ?? null);
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [newItemPriority, setNewItemPriority] = useState<TodoPriority>('medium');
-  const [newItemDueDate, setNewItemDueDate] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(
+    lists[0]?.id ?? null,
+  );
+  const [newItemTitle, setNewItemTitle] = useState("");
+  const [newItemPriority, setNewItemPriority] =
+    useState<TodoPriority>("medium");
+  const [newItemDueDate, setNewItemDueDate] = useState("");
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [selectedForDelete, setSelectedForDelete] = useState<string[]>([]);
-  const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');
-  const [sortBy, setSortBy] = useState<'createdDesc' | 'createdAsc' | 'priority' | 'dueDate'>('createdDesc');
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "completed"
+  >("all");
+  const [sortBy, setSortBy] = useState<
+    "createdDesc" | "createdAsc" | "priority" | "dueDate"
+  >("createdDesc");
 
   const selectedList = lists.find((l) => l.id === selectedId) ?? null;
 
   useEffect(() => {
-    setSelectedForDelete([]);
+    // avoid synchronous setState inside effect to prevent cascading renders
+    const t = setTimeout(() => setSelectedForDelete([]), 0);
+    return () => clearTimeout(t);
   }, [selectedId]);
 
   useEffect(() => {
     if (!selectedList) return;
     const validIds = new Set(selectedList.items.map((item) => item.id));
-    setSelectedForDelete((current) => current.filter((id) => validIds.has(id)));
+    const t = setTimeout(() => {
+      setSelectedForDelete((current) =>
+        current.filter((id) => validIds.has(id)),
+      );
+    }, 0);
+    return () => clearTimeout(t);
   }, [selectedList]);
 
   const handleNewList = () => {
@@ -163,17 +265,17 @@ export default function App() {
     const title = newItemTitle.trim();
     if (!title || !selectedId) return;
     addItem(selectedId, title, newItemPriority, newItemDueDate || null);
-    setNewItemTitle('');
-    setNewItemDueDate('');
-    setNewItemPriority('medium');
+    setNewItemTitle("");
+    setNewItemDueDate("");
+    setNewItemPriority("medium");
   };
 
   const handleToggleSelectForDelete = (itemId: string) => {
-    setSelectedForDelete((current) => (
+    setSelectedForDelete((current) =>
       current.includes(itemId)
         ? current.filter((id) => id !== itemId)
-        : [...current, itemId]
-    ));
+        : [...current, itemId],
+    );
   };
 
   const handleDeleteSelected = () => {
@@ -188,15 +290,16 @@ export default function App() {
 
     return selectedList.items
       .filter((item) => {
-        if (statusFilter === 'active' && item.done) return false;
-        if (statusFilter === 'completed' && !item.done) return false;
+        if (statusFilter === "active" && item.done) return false;
+        if (statusFilter === "completed" && !item.done) return false;
         if (!normalizedQuery) return true;
         return item.title.toLowerCase().includes(normalizedQuery);
       })
       .sort((a, b) => {
-        if (sortBy === 'createdAsc') return a.createdAt - b.createdAt;
-        if (sortBy === 'priority') return PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
-        if (sortBy === 'dueDate') {
+        if (sortBy === "createdAsc") return a.createdAt - b.createdAt;
+        if (sortBy === "priority")
+          return PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
+        if (sortBy === "dueDate") {
           if (!a.dueDate && !b.dueDate) return b.createdAt - a.createdAt;
           if (!a.dueDate) return 1;
           if (!b.dueDate) return -1;
@@ -207,15 +310,19 @@ export default function App() {
   }, [query, selectedList, sortBy, statusFilter]);
 
   const completedCount = selectedList?.items.filter((i) => i.done).length ?? 0;
-  const activeCount = selectedList ? selectedList.items.length - completedCount : 0;
-  const selectedVisibleCount = visibleItems.filter((item) => selectedForDelete.includes(item.id)).length;
+  const activeCount = selectedList
+    ? selectedList.items.length - completedCount
+    : 0;
+  const selectedVisibleCount = visibleItems.filter((item) =>
+    selectedForDelete.includes(item.id),
+  ).length;
 
   const doneCount = selectedList?.items.filter((i) => i.done).length ?? 0;
   const totalCount = selectedList?.items.length ?? 0;
 
   return (
     <div className="app-shell">
-      <div className={`sidebar-drawer${isNavOpen ? ' open' : ''}`}>
+      <div className={`sidebar-drawer${isNavOpen ? " open" : ""}`}>
         <Sidebar
           lists={lists}
           selectedId={selectedId}
@@ -239,7 +346,16 @@ export default function App() {
           onClick={() => setIsNavOpen(true)}
           aria-label="Open sidebar"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="18" x2="21" y2="18" />
@@ -269,7 +385,9 @@ export default function App() {
               <select
                 className="task-meta-select"
                 value={newItemPriority}
-                onChange={(e) => setNewItemPriority(e.target.value as TodoPriority)}
+                onChange={(e) =>
+                  setNewItemPriority(e.target.value as TodoPriority)
+                }
                 aria-label="Task priority"
               >
                 <option value="high">High</option>
@@ -283,8 +401,21 @@ export default function App() {
                 onChange={(e) => setNewItemDueDate(e.target.value)}
                 aria-label="Task due date"
               />
-              <button type="submit" className="add-item-btn" disabled={!newItemTitle.trim()}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <button
+                type="submit"
+                className="add-item-btn"
+                disabled={!newItemTitle.trim()}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
@@ -304,7 +435,11 @@ export default function App() {
                 <select
                   className="task-tools-select"
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'completed')}
+                  onChange={(e) =>
+                    setStatusFilter(
+                      e.target.value as "all" | "active" | "completed",
+                    )
+                  }
                   aria-label="Filter task status"
                 >
                   <option value="all">All</option>
@@ -314,7 +449,15 @@ export default function App() {
                 <select
                   className="task-tools-select"
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'createdDesc' | 'createdAsc' | 'priority' | 'dueDate')}
+                  onChange={(e) =>
+                    setSortBy(
+                      e.target.value as
+                        | "createdDesc"
+                        | "createdAsc"
+                        | "priority"
+                        | "dueDate",
+                    )
+                  }
                   aria-label="Sort tasks"
                 >
                   <option value="createdDesc">Newest first</option>
@@ -325,28 +468,61 @@ export default function App() {
               </div>
 
               <div className="task-tools-row actions">
-                <p className="task-tools-hint">Tip: Select tasks using each card checkbox, then use Delete Selected.</p>
+                <p className="task-tools-hint">
+                  Tip: Select tasks using each card checkbox, then use Delete
+                  Selected.
+                </p>
                 <div className="task-summary">
                   <span>{activeCount} active</span>
                   <span>{completedCount} completed</span>
                   <span>{selectedVisibleCount} selected</span>
                 </div>
-                <button type="button" className="tool-btn" onClick={() => setSelectedForDelete(visibleItems.map((item) => item.id))}>
+                <button
+                  type="button"
+                  className="tool-btn"
+                  onClick={() =>
+                    setSelectedForDelete(visibleItems.map((item) => item.id))
+                  }
+                >
                   Select Visible
                 </button>
-                <button type="button" className="tool-btn" onClick={() => setSelectedForDelete([])}>
+                <button
+                  type="button"
+                  className="tool-btn"
+                  onClick={() => setSelectedForDelete([])}
+                >
                   Clear Selection
                 </button>
-                <button type="button" className="tool-btn danger" onClick={handleDeleteSelected} disabled={selectedForDelete.length === 0}>
+                <button
+                  type="button"
+                  className="tool-btn danger"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedForDelete.length === 0}
+                >
                   Delete Selected
                 </button>
-                <button type="button" className="tool-btn" onClick={() => selectedId && clearCompleted(selectedId)} disabled={completedCount === 0}>
+                <button
+                  type="button"
+                  className="tool-btn"
+                  onClick={() => selectedId && clearCompleted(selectedId)}
+                  disabled={completedCount === 0}
+                >
                   Clear Completed
                 </button>
-                <button type="button" className="tool-btn" onClick={() => selectedId && toggleAll(selectedId, true)} disabled={totalCount === 0}>
+                <button
+                  type="button"
+                  className="tool-btn"
+                  onClick={() => selectedId && toggleAll(selectedId, true)}
+                  disabled={totalCount === 0}
+                >
                   Complete All
                 </button>
-                <button type="button" className="tool-btn" onClick={() => selectedId && toggleAll(selectedId, false)} disabled={totalCount === 0}>
+                <button
+                  type="button"
+                  className="tool-btn"
+                  onClick={() => selectedId && toggleAll(selectedId, false)}
+                  disabled={totalCount === 0}
+                >
                   Mark All Active
                 </button>
               </div>
@@ -355,7 +531,16 @@ export default function App() {
             <div className="items-container">
               {selectedList.items.length === 0 ? (
                 <div className="empty-state">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <rect x="3" y="3" width="18" height="18" rx="3" />
                     <path d="M9 12l2 2 4-4" />
                   </svg>
@@ -363,7 +548,16 @@ export default function App() {
                 </div>
               ) : visibleItems.length === 0 ? (
                 <div className="empty-state">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
@@ -377,10 +571,18 @@ export default function App() {
                     onToggleDone={(id) => toggleItem(selectedList.id, id)}
                     onDelete={(id) => {
                       deleteItem(selectedList.id, id);
-                      setSelectedForDelete((current) => current.filter((selectedItemId) => selectedItemId !== id));
+                      setSelectedForDelete((current) =>
+                        current.filter(
+                          (selectedItemId) => selectedItemId !== id,
+                        ),
+                      );
                     }}
-                    onCommentChange={(id, html) => updateComment(selectedList.id, id, html)}
-                    onRename={(id, title) => renameItem(selectedList.id, id, title)}
+                    onCommentChange={(id, html) =>
+                      updateComment(selectedList.id, id, html)
+                    }
+                    onRename={(id, title) =>
+                      renameItem(selectedList.id, id, title)
+                    }
                     onToggleSelectForDelete={handleToggleSelectForDelete}
                     selectedForDelete={selectedForDelete.includes(item.id)}
                   />
@@ -390,21 +592,37 @@ export default function App() {
 
             <footer className="builder-credit">
               Built by <strong>Seun Ajetomobi</strong>.
-              <a href="https://github.com/seunajetomobi" target="_blank" rel="noreferrer">
+              <a
+                href="https://github.com/seunajetomobi"
+                target="_blank"
+                rel="noreferrer"
+              >
                 github.com/seunajetomobi
               </a>
             </footer>
           </>
         ) : (
           <div className="welcome">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M9 11l3 3L22 4" />
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
             </svg>
             <h2>Welcome to TaskFlow</h2>
-            <p>Create your first list using the <strong>New List</strong> button in the sidebar, then add your first task with title, priority, and due date.</p>
+            <p>
+              Create your first list using the <strong>New List</strong> button
+              in the sidebar, then add your first task with title, priority, and
+              due date.
+            </p>
             <h3>Welcome to Seun Ajetomobi todo list project</h3>
-
           </div>
         )}
       </main>
