@@ -78,19 +78,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 32px;
   overflow: auto;
 }
 
 #root {
-  width: min(1120px, 100%);
-  height: min(88vh, 860px);
-  height: min(88dvh, 860px);
+  width: min(1280px, 100%);
+  height: min(92vh, 920px);
+  height: min(92dvh, 920px);
   overflow: hidden;
   border-radius: 20px;
-  box-shadow: 0 20px 48px rgba(30, 27, 75, 0.18);
+  box-shadow: 0 22px 64px rgba(30, 27, 75, 0.18);
   border: 1px solid rgba(109, 99, 255, 0.12);
   background: var(--bg);
+  padding: 18px;
 }
 
 .app-shell {
@@ -437,7 +438,7 @@ body {
 }
 
 .main-header {
-  padding: 28px 32px 20px;
+  padding: 34px 40px 26px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -465,8 +466,8 @@ body {
 
 .add-item-form {
   display: flex;
-  gap: 10px;
-  padding: 20px 32px;
+  gap: 12px;
+  padding: 22px 40px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -714,12 +715,18 @@ button:active,
 .items-container {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 32px;
+  padding: 32px 40px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
   scrollbar-width: thin;
   scrollbar-color: #e5e7eb transparent;
+}
+
+/* container must be positioned for absolute note placement */
+.items-container {
+  position: relative;
 }
 
 .empty-state {
@@ -749,7 +756,8 @@ button:active,
   box-shadow: var(--shadow);
   transition:
     box-shadow 0.2s,
-    border-color 0.2s;
+    border-color 0.2s,
+    transform 0.12s;
   overflow: hidden;
 }
 
@@ -761,6 +769,215 @@ button:active,
 .todo-card.done {
   border-color: #a7f3d0;
   background: #f0fdf4;
+}
+
+/* Sticky-note specific styles */
+.todo-card.sticky-note {
+  width: 200px;
+  min-height: 120px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  /* layered shadow + subtle inset to feel like paper */
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.06) inset,
+    0 6px 18px rgba(0, 0, 0, 0.16),
+    0 22px 40px rgba(0, 0, 0, 0.12);
+  display: block;
+  transform-origin: top left;
+  /* subtle paper grain & highlight */
+  background-repeat: no-repeat, repeat;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.02)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 6px
+    );
+  background-blend-mode: overlay, normal;
+}
+
+.todo-card.sticky-note .todo-card-header {
+  padding: 10px 8px;
+}
+
+.todo-card.sticky-note .todo-card-body {
+  padding: 8px 8px 12px 8px;
+}
+
+.todo-card.sticky-note .todo-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* pins to make notes look real */
+.pin {
+  position: absolute;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  /* ensure main can position the minimized tray */
+  .main {
+    position: relative;
+  }
+  background: linear-gradient(180deg, #f8fafc 0%, #d1d5db 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.pin.pin-left {
+  left: 14px;
+  transform: rotate(-12deg);
+}
+.pin.pin-right {
+  right: 14px;
+  transform: rotate(10deg);
+}
+
+/* small folded corner for realism */
+.todo-card.sticky-note::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  transform: rotate(24deg);
+  border-radius: 2px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.7),
+    rgba(0, 0, 0, 0.04)
+  );
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  opacity: 0.9;
+}
+
+.todo-card.sticky-note .todo-title {
+  cursor: pointer;
+}
+
+/* let sticky notes grow vertically with content */
+.todo-card.sticky-note {
+  height: auto;
+}
+
+/* small color palette inside a note */
+.note-palette {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  gap: 6px;
+}
+.note-palette .font-select,
+.note-palette .font-size-select {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.6);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.note-palette .font-color-input {
+  width: 28px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  padding: 0;
+}
+.color-swatch.selected {
+  outline: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+/* bottom-right resize handle */
+.resize-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+}
+.resize-handle.side.right {
+  right: 6px;
+  bottom: 50%;
+  transform: translateY(50%);
+  cursor: ew-resize;
+}
+.resize-handle.side.left {
+  left: 6px;
+  bottom: 50%;
+  transform: translateY(50%);
+  cursor: ew-resize;
+}
+.resize-handle.side.bottom {
+  right: 50%;
+  bottom: 6px;
+  transform: translateX(50%);
+  cursor: ns-resize;
+}
+.resize-handle.side.top {
+  right: 50%;
+  top: 6px;
+  transform: translateX(50%);
+  cursor: ns-resize;
+}
+
+/* ensure action icons contrast regardless of background */
+.card-actions .icon-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #222;
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* Make note body clean and spaced */
+.todo-card.sticky-note .todo-card-body {
+  padding: 10px 12px 14px 12px;
+  min-height: 60px;
+}
+.todo-card.sticky-note .ProseMirror {
+  padding: 6px 8px;
+  font-size: inherit;
+  color: inherit;
+  line-height: 1.5;
+}
+
+/* Minimized note - hide body and shrink */
+.todo-card.sticky-note.minimized .todo-card-body,
+.todo-card.sticky-note.minimized .card-footer,
+.todo-card.sticky-note.minimized .note-palette {
+  display: none;
+}
+.todo-card.sticky-note.minimized {
+  height: auto;
+  padding-bottom: 8px;
+}
+
+/* when minimized, show only the title — hide pins and action icons */
+.todo-card.sticky-note.minimized .pin,
+.todo-card.sticky-note.minimized .card-actions,
+.todo-card.sticky-note.minimized .delete-select-label {
+  display: none;
+}
+.todo-card.sticky-note.minimized {
+  min-width: 160px;
+  width: fit-content;
+}
+
+/* pin default styling: colors set inline */
+.pin {
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .todo-card-header {
@@ -802,6 +1019,10 @@ button:active,
   font-weight: 500;
   color: var(--text);
   transition: color 0.2s;
+}
+
+.todo-card.sticky-note .todo-title {
+  word-break: break-word;
 }
 
 .todo-title-input {
@@ -891,6 +1112,12 @@ button:active,
 .card-actions {
   display: flex;
   gap: 4px;
+}
+
+/* make the Show/Hide comments font clearly visible in deep red */
+.card-footer > button.icon-btn {
+  color: #8b0000;
+  font-weight: 600;
 }
 
 .todo-card-body {
@@ -1067,6 +1294,46 @@ button:active,
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+/* Minimized tray at the bottom of the main area */
+.minimized-tray {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 88px; /* sits just above footer */
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  z-index: 80;
+}
+.minimized-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 6px 10px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  min-width: 140px;
+}
+.minimized-chip .minimized-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.minimized-chip .minimized-title {
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
 }
 
 .builder-credit a {
@@ -1341,5 +1608,67 @@ button:active,
     width: 100%;
     text-align: left;
     font-size: 1rem;
+  }
+}
+
+/* Mobile safe-area and rendering fixes */
+:root {
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
+}
+
+/* Prefer viewport-relative heights on modern browsers and respect safe area insets */
+body {
+  padding-top: calc(32px + var(--safe-top));
+  padding-right: calc(32px + var(--safe-right));
+  padding-bottom: calc(32px + var(--safe-bottom));
+  padding-left: calc(32px + var(--safe-left));
+}
+
+/* Ensure the root container fills available viewport on small devices */
+#root {
+  max-height: calc(100svh - (32px + var(--safe-top) + var(--safe-bottom)));
+}
+
+/* Avoid content being hidden behind the minimized tray or system UI on small screens */
+.items-container {
+  padding-bottom: calc(140px + var(--safe-bottom));
+}
+.minimized-tray {
+  bottom: calc(16px + var(--safe-bottom));
+}
+
+/* Make sticky notes behave fluidly on narrow viewports */
+@media (max-width: 640px) {
+  .todo-card.sticky-note {
+    width: calc(100% - 28px);
+    min-width: 0;
+    margin: 0 auto;
+  }
+  .todo-card.sticky-note.minimized {
+    min-width: 0;
+  }
+  /* Slightly reduce large paddings that cause overflow */
+  .main-header,
+  .add-item-form,
+  .items-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Extra small devices: keep interactive elements large enough and avoid horizontal overflow */
+@media (max-width: 420px) {
+  .new-list-btn,
+  .mobile-menu-btn,
+  .add-item-btn {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .todo-title,
+  .todo-card.sticky-note .todo-title {
+    font-size: 0.82rem;
   }
 }
