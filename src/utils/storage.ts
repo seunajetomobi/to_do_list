@@ -49,6 +49,24 @@ export function saveLists(lists: TodoList[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(lists));
 }
 
+const THEME_KEY = "todoapp_theme";
+
+export type Theme = "light" | "dark";
+
+export function loadTheme(): Theme {
+  try {
+    const raw = localStorage.getItem(THEME_KEY);
+    if (raw === "dark" || raw === "light") return raw;
+  } catch {}
+  return "light";
+}
+
+export function saveTheme(theme: Theme): void {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {}
+}
+
 export function uuid(): string {
   // Use native randomUUID when available (secure contexts), otherwise use a
   // crypto.getRandomValues-based RFC4122 v4 fallback so the app works over HTTP

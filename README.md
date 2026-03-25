@@ -1,3 +1,138 @@
+**Project Overview**
+- **Name**: TaskFlow (a lightweight React + TypeScript todo app)
+- **Purpose**: Create and manage lists and tasks with priorities, due dates, simple tools (timer/stopwatch), light/dark theme, and local persistence.
+
+**Quick Start**
+- **Prerequisites**: Node 20.x, npm, and optionally AWS CLI (for S3 deploy) and GitHub CLI (optional).
+- **Install dependencies**:
+```bash
+npm install
+```
+- **Run development server**:
+```bash
+npm run dev
+```
+- **Build for production**:
+```bash
+npm run build
+```
+
+**Files & Structure**
+- **`index.html`**: App entry HTML.
+- **`package.json`**: Scripts and deps. Useful scripts:
+  - `npm run dev` — start Vite dev server
+  - `npm run build` — build for production
+  - `npm run build:pages` — build with relative base (for GitHub Pages)
+  - `npm run deploy:pages` — build + deploy via `gh-pages` (npx)
+  - `npm run deploy:aws` — build + sync `dist/` to S3 (requires `BUCKET` env var and `aws` CLI configured)
+- **`src/main.tsx`**: React entry mount.
+- **`src/App.tsx`**: Root component — list management, UI layout, handlers, and uses `useLists()` (see below).
+- **`src/components/Sidebar.tsx`**: Sidebar UI (lists, new list, theme toggle).
+- **`src/components/TodoCard.tsx`**: Task card UI (mark done, rename, comments via `RichTextEditor`).
+- **`src/components/ToolsPanel.tsx`**: Timer and Stopwatch tool UI.
+- **`src/components/RichTextEditor.tsx`**: Lazy-loaded rich text editor used for task comments (uses TipTap).
+- **`src/utils/storage.ts`**: Persistence utilities: `loadLists()`, `saveLists()`, `loadTheme()`, `saveTheme()`, and `uuid()` fallback.
+- **`src/index.css`**: Global styling, variables, and responsive rules.
+
+**Key Functions & How The App Is Built**
+- `useLists()` (defined in `src/App.tsx`): core state manager for all lists. It:
+  - Loads saved lists from `localStorage` via `loadLists()`.
+  - Provides `createList()`, `deleteList()`, `renameList()`.
+  - Provides item operations: `addItem()`, `deleteItem()`, `deleteManyItems()`, `toggleItem()`, `renameItem()`, `updateComment()`.
+  - Persists updates using `saveLists()` on every change.
+- Theme handling:
+  - `loadTheme()` reads `localStorage` and `saveTheme()` persists it.
+  - `App` applies `.dark` class on `document.documentElement` to switch themes.
+- Task rendering & filtering:
+  - `visibleItems` is computed with `useMemo` using `query` and `sortBy` to filter and sort tasks.
+  - Each task is rendered with `TodoCard` which supports edit, comment, select-for-bulk-delete, and done toggling.
+
+**Components Explained**
+- `Sidebar` (`src/components/Sidebar.tsx`):
+  - Props: `lists`, `selectedId`, `onSelect`, `onNew`, `onRename`, `onDelete`, `theme`, `onToggleTheme`.
+  - Supports creating/renaming/deleting lists, and toggling theme.
+- `TodoCard` (`src/components/TodoCard.tsx`):
+  - Renders a single task card with title, priority, due date, done state, and comment editor.
+  - Uses lazy `RichTextEditor` for comments to keep initial bundle small.
+- `ToolsPanel` (`src/components/ToolsPanel.tsx`):
+  - Small toolset with `Timer` and `Stopwatch` components.
+  - Timer uses `Notification` (if allowed) and simple countdown state.
+
+**Persistence & IDs**
+- All lists and tasks are saved in `localStorage` under key `todoapp_lists` (see `loadLists()` / `saveLists()` in `src/utils/storage.ts`).
+- IDs are generated using `crypto.randomUUID()` when available, otherwise a secure fallback `uuid()` is used.
+
+**Styling & Theme**
+- Styling is in `src/index.css`. Theme toggling is CSS variable-based and controlled by the `.dark` class on the document root.
+
+**How the Application Functions (user flow)**
+- Create a new list with the **New List** button in the sidebar.
+- Select a list; add tasks using the add form (title, priority, optional due date).
+- Tasks show priority, due date, and allow:
+  - Toggle Done (check button)
+  - Edit title (pencil)
+  - Delete
+  - Add rich comments (lazy-loaded editor)
+- Use search and sort controls to find and order tasks.
+- Select tasks using each card checkbox and use **Delete Selected** to remove them in batch.
+
+**Deploying**
+
+GitHub Pages (recommended for static hosting)
+- This repo already includes a GitHub Actions workflow to build and publish on push to `main`.
+- Manual local deploy steps:
+```bash
+# Build with relative base for Pages
+npm run build:pages
+
+# Deploy via script (uses npx gh-pages)
+npm run deploy:pages
+```
+- If `gh-pages` is not present, install it as a dev-dependency:
+```bash
+npm install --save-dev gh-pages
+```
+- The included workflow file `.github/workflows/deploy.yml` will also build and publish when you push to `main`.
+
+AWS S3 static hosting
+- Prereqs: `aws` CLI installed and configured (`aws configure`) with credentials that can write to the target S3 bucket.
+- Build and upload (script expects `BUCKET` env var):
+```bash
+# build for production
+npm run build
+
+# set bucket and deploy
+export BUCKET=my-static-site-bucket
+npm run deploy:aws
+```
+- The `deploy:aws` script runs `npm run build` then `aws s3 sync dist/ s3://$BUCKET/ --delete`.
+
+**Troubleshooting**
+- Blank screen / HMR errors: open DevTools → Console. Common causes:
+  - JSX/parse errors (fix indicated file/line in overlay)
+  - Missing props on components (check console stack trace)
+- If deployment fails on AWS, ensure `aws configure` was run and the IAM user has `s3:PutObject`, `s3:DeleteObject`, and `s3:ListBucket` on the target bucket.
+
+**Development Notes & Tips**
+- The rich text editor (`src/components/RichTextEditor.tsx`) is lazy-loaded to reduce initial bundle size.
+- Theme preference is saved per-browser via `localStorage` (`todoapp_theme`).
+- If you want to reset state during development, open DevTools → Application → Local Storage → remove `todoapp_lists`.
+
+**Useful Links (files)**
+- [src/App.tsx](src/App.tsx)
+- [src/utils/storage.ts](src/utils/storage.ts)
+- [src/components/Sidebar.tsx](src/components/Sidebar.tsx)
+- [src/components/TodoCard.tsx](src/components/TodoCard.tsx)
+- [src/components/ToolsPanel.tsx](src/components/ToolsPanel.tsx)
+- [src/index.css](src/index.css)
+- [package.json](package.json)
+
+If you want, I can now:
+- run a quick static check for obvious TypeScript/JS errors,
+- or run the dev server and confirm the app mounts locally (tell me if you want me to run `npm run dev`).
+
+---
+Built and documented by the repository tooling assistant.
 TaskFlow — Warm & Lovely To‑Do App
 
 A minimal, client-side to‑do list app with a warm visual theme, delightful fonts, and fast UX.
