@@ -35,6 +35,22 @@ jobs:
       - name: Build for GitHub Pages
         run: npm run build:pages
 
+      - name: Debug Pages artifact
+        run: |
+          echo "Commit: $(git rev-parse --short HEAD)"
+          echo "Actor: $GITHUB_ACTOR"
+          echo "Run ID: $GITHUB_RUN_ID"
+          node --version || true
+          npm --version || true
+          echo "dist size summary:"
+          du -sh dist || true
+          echo "dist tree:"
+          ls -la dist || true
+          echo "dist recursive list:"
+          ls -R dist || true
+          echo "package.json (head):"
+          head -n 40 package.json || true
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
